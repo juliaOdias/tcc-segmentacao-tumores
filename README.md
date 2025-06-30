@@ -36,6 +36,10 @@ O projeto tem como objetivo aplicar redes neurais convolucionais (CNNs) para seg
 
 📄 README.md → Este documento
 
+📄 .gitignore            → Arquivos/pastas ignorados pelo Git
+
+📄 LICENSE               → Licença do projeto (MIT)
+
 
 ---
 
