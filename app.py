@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 import tensorflow as tf
 
 # Carregar o modelo treinado (compatível com Keras 2.18)
-model = load_model("modelo_unet_brain_compat.h5", compile=False)
+model = load_model("modelo_unet_brain_compat.keras", compile=False)
 
 # Tamanho esperado da imagem
 IMG_HEIGHT = 128
