@@ -1,64 +1,45 @@
 import streamlit as st
 import numpy as np
-import cv2
 from PIL import Image
-from keras.models import load_model
-import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
+import tensorflow as tf
 
-# Carregar o modelo (.keras)
-@st.cache_resource
-def load_unet_model():
-    return load_model("modelo_unet_brain.keras", compile=False)
+# Carregar o modelo treinado (compatível com Keras 2.18)
+model = load_model("modelo_unet_brain_compat.h5", compile=False)
 
-model = load_unet_model()
+# Tamanho esperado da imagem
+IMG_HEIGHT = 128
+IMG_WIDTH = 128
 
-# Configurações da interface
-st.set_page_config(page_title="Segmentação de Tumores", layout="centered")
-st.title("🧠 Segmentação de Tumores Cerebrais com U-Net")
-st.write("Faça upload de uma **imagem de ressonância magnética** (grayscale) para prever a segmentação de tumor.")
-
-# Upload da imagem
-uploaded_file = st.file_uploader("📤 Envie a imagem MRI (PNG ou JPG)", type=["png", "jpg", "jpeg"])
-
-# Tamanho esperado pelo modelo
-IMG_HEIGHT, IMG_WIDTH = 128, 128
-
-def preprocess_image(image_pil):
-    # Converter para escala de cinza
-    image = image_pil.convert("L")
-    # Redimensionar
+def preprocess_image(image):
     image = image.resize((IMG_WIDTH, IMG_HEIGHT))
-    # Converter para array e normalizar
     image = np.array(image) / 255.0
-    image = np.expand_dims(image, axis=-1)  # (128, 128, 1)
-    image = np.expand_dims(image, axis=0)   # (1, 128, 128, 1)
+    if image.ndim == 2:
+        image = np.expand_dims(image, axis=-1)  # grayscale
+    if image.shape[-1] == 1:
+        image = np.repeat(image, 3, axis=-1)  # garantir 3 canais
+    image = np.expand_dims(image, axis=0)
     return image
 
-def overlay_mask(image, mask, alpha=0.5):
-    # Converte para RGB
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    # Cria máscara vermelha
-    mask_colored = np.zeros_like(image_rgb)
-    mask_colored[:, :, 0] = mask  # vermelho no canal R
-    # Sobreposição
-    blended = cv2.addWeighted(image_rgb, 1 - alpha, mask_colored, alpha, 0)
-    return blended
+def predict_mask(image):
+    processed_image = preprocess_image(image)
+    prediction = model.predict(processed_image)
+    mask = prediction[0, :, :, 0]
+    return mask
 
-if uploaded_file:
-    image_pil = Image.open(uploaded_file)
-    st.image(image_pil, caption="Imagem enviada", use_column_width=True)
+def main():
+    st.title("Segmentação de Tumores Cerebrais - U-Net")
 
-    # Pré-processamento
-    image_input = preprocess_image(image_pil)
+    uploaded_file = st.file_uploader("Envie uma imagem de ressonância magnética", type=["png", "jpg", "jpeg"])
 
-    # Predição da máscara
-    prediction = model.predict(image_input)[0, :, :, 0]
-    mask = (prediction > 0.5).astype(np.uint8) * 255  # binariza e escala para 0-255
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="Imagem Enviada", use_column_width=True)
 
-    # Sobreposição
-    original_resized = np.array(image_pil.convert("L").resize((IMG_WIDTH, IMG_HEIGHT)))
-    overlaid = overlay_mask(original_resized, mask)
+        if st.button("Segmentar"):
+            mask = predict_mask(image)
+            st.subheader("Máscara Segmentada")
+            st.image(mask, caption="Máscara", use_column_width=True, clamp=True)
 
-    # Exibir resultado
-    st.subheader("🧪 Resultado da Segmentação")
-    st.image(overlaid, caption="Máscara sobreposta à imagem", use_column_width=True)
+if __name__ == "__main__":
+    main()
