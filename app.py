@@ -2,44 +2,32 @@ import streamlit as st
 import numpy as np
 from PIL import Image
 from tensorflow.keras.models import load_model
-import tensorflow as tf
 
-# Carregar o modelo treinado (compatível com Keras 2.18)
-model = load_model("modelo_unet_brain_compat.keras", compile=False)
+# Carregar modelo (certifique-se que o arquivo .keras está no mesmo diretório)
+@st.cache_resource(show_spinner=True)
+def load_unet_model():
+    model = load_model("modelo_unet_brain_compat.keras", compile=False)
+    return model
 
-# Tamanho esperado da imagem
-IMG_HEIGHT = 128
-IMG_WIDTH = 128
+model = load_unet_model()
 
-def preprocess_image(image):
-    image = image.resize((IMG_WIDTH, IMG_HEIGHT))
-    image = np.array(image) / 255.0
-    if image.ndim == 2:
-        image = np.expand_dims(image, axis=-1)  # grayscale
-    if image.shape[-1] == 1:
-        image = np.repeat(image, 3, axis=-1)  # garantir 3 canais
-    image = np.expand_dims(image, axis=0)
-    return image
+st.title("Segmentação com modelo U-Net")
 
-def predict_mask(image):
-    processed_image = preprocess_image(image)
-    prediction = model.predict(processed_image)
-    mask = prediction[0, :, :, 0]
-    return mask
+uploaded_file = st.file_uploader("Envie uma imagem 128x128 em grayscale", type=["png", "jpg", "jpeg"])
 
-def main():
-    st.title("Segmentação de Tumores Cerebrais - U-Net")
+if uploaded_file is not None:
+    # Abrir imagem e converter para grayscale e tamanho correto
+    image = Image.open(uploaded_file).convert("L").resize((128, 128))
+    st.image(image, caption="Imagem enviada", use_column_width=True)
 
-    uploaded_file = st.file_uploader("Envie uma imagem de ressonância magnética", type=["png", "jpg", "jpeg"])
+    # Preparar array para predição
+    image_array = np.array(image) / 255.0
+    image_array = image_array.reshape((1, 128, 128, 1))  # batch_size, height, width, channels
 
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file).convert("RGB")
-        st.image(image, caption="Imagem Enviada", use_column_width=True)
-
-        if st.button("Segmentar"):
-            mask = predict_mask(image)
-            st.subheader("Máscara Segmentada")
-            st.image(mask, caption="Máscara", use_column_width=True, clamp=True)
-
-if __name__ == "__main__":
-    main()
+    if st.button("Predizer segmentação"):
+        preds = model.predict(image_array)
+        # Supondo que saída seja máscara com shape (1, 128, 128, 1)
+        mask = preds[0, :, :, 0]
+        # Normalizar para exibir melhor (0-255)
+        mask_img = (mask * 255).astype(np.uint8)
+        st.image(mask_img, caption="Máscara predita", use_column_width=True)
