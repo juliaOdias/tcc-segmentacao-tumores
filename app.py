@@ -1,33 +1,44 @@
 import streamlit as st
 import numpy as np
+import tensorflow as tf
 from PIL import Image
-from tensorflow.keras.models import load_model
+import cv2
+import os
 
-# Carregar modelo (certifique-se que o arquivo .keras está no mesmo diretório)
-@st.cache_resource(show_spinner=True)
-def load_unet_model():
-    model = load_model("modelo_unet_brain_compat.keras", compile=False)
+# === Carregar o modelo ===
+@st.cache_resource
+def load_model():
+    model = tf.keras.models.load_model("modelo.keras")
     return model
 
-model = load_unet_model()
+model = load_model()
 
-st.title("Segmentação com modelo U-Net")
+# === Função para pré-processar imagem ===
+def preprocess_image(uploaded_image, target_size=(128, 128)):
+    image = Image.open(uploaded_image).convert('RGB')
+    image = image.resize(target_size)
+    img_array = np.array(image) / 255.0  # Normalização
+    return img_array, image
 
-uploaded_file = st.file_uploader("Envie uma imagem 128x128 em grayscale", type=["png", "jpg", "jpeg"])
+# === Função para prever a máscara ===
+def predict_mask(model, img_array):
+    input_image = np.expand_dims(img_array, axis=0)  # Adiciona batch dimension
+    pred_mask = model.predict(input_image)[0]  # Remove batch
+    pred_mask = (pred_mask > 0.5).astype(np.uint8) * 255  # Binariza
+    return pred_mask
+
+# === Interface do usuário ===
+st.title("Segmentação de Tumores Cerebrais com CNN")
+st.write("Faça o upload de uma imagem de ressonância para segmentação do tumor.")
+
+uploaded_file = st.file_uploader("Envie uma imagem", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Abrir imagem e converter para grayscale e tamanho correto
-    image = Image.open(uploaded_file).convert("L").resize((128, 128))
-    st.image(image, caption="Imagem enviada", use_column_width=True)
+    img_array, original_image = preprocess_image(uploaded_file)
+    st.image(original_image, caption="Imagem Original", use_column_width=True)
 
-    # Preparar array para predição
-    image_array = np.array(image) / 255.0
-    image_array = image_array.reshape((1, 128, 128, 1))  # batch_size, height, width, channels
+    st.write("Gerando máscara...")
+    pred_mask = predict_mask(model, img_array)
 
-    if st.button("Predizer segmentação"):
-        preds = model.predict(image_array)
-        # Supondo que saída seja máscara com shape (1, 128, 128, 1)
-        mask = preds[0, :, :, 0]
-        # Normalizar para exibir melhor (0-255)
-        mask_img = (mask * 255).astype(np.uint8)
-        st.image(mask_img, caption="Máscara predita", use_column_width=True)
+    # Mostrar máscara prevista
+    st.image(pred_mask, caption="Máscara Prevista", use_column_width=True, clamp=True)
