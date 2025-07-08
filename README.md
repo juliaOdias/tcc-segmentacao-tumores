@@ -1,108 +1,94 @@
-# 🧠 Segmentação de Tumores Cerebrais com CNN em Imagens de Ressonância Magnética
+# 🧠 Segmentação de Tumores Cerebrais com U-Net
 
-Este repositório contém o código, dados e recursos multimídia desenvolvidos para o Trabalho de Conclusão de Curso (TCC) apresentado à Universidade Paulista – UNIP, com o tema:  
-**“Visão Computacional e Análise de Imagens Médicas com Machine Learning”**.
-
-O projeto tem como objetivo aplicar redes neurais convolucionais (CNNs) para segmentação automática de tumores cerebrais em exames de ressonância magnética (MRI), promovendo precisão diagnóstica e acessibilidade tecnológica para a área médica.
+Este projeto apresenta uma aplicação interativa baseada em aprendizado profundo para segmentação automática de tumores cerebrais em imagens de ressonância magnética (RM). O modelo foi desenvolvido e treinado como parte do Trabalho de Conclusão de Curso (TCC) em Ciência da Computação.
 
 ---
 
-## 📌 Objetivos do Projeto
+## 🎯 Objetivo
 
-- Implementar um modelo de CNN para segmentação de tumores cerebrais.
-- Comparar a segmentação automática com segmentações manuais de especialistas.
-- Avaliar o desempenho com métricas como IoU e acurácia.
-- Desenvolver um painel interativo (dashboard) para visualização em tempo real.
-- Produzir um vídeo demonstrativo para divulgação científica.
-- Compartilhar o código e resultados com a comunidade acadêmica por meio deste repositório.
+Segmentar regiões de tumores cerebrais a partir de imagens de ressonância magnética utilizando uma rede neural convolucional do tipo **U-Net**, e disponibilizar os resultados de forma visual e acessível por meio de uma aplicação **web interativa com Streamlit**.
 
 ---
 
-## 🗂 Estrutura do Repositório
+## 🧪 Tecnologias utilizadas
 
-📁 src/ → Código-fonte do modelo CNN
-
-📁 data/ → Imagens de MRI (exemplos e estruturadas)
-
-📁 interface/ → Aplicação em Streamlit
-
-📁 results/ → Segmentações geradas e comparações
-
-📁 figures/ → Imagens usadas no TCC
-
-📁 media/ → Vídeo demonstrativo
-
-📄 requirements.txt → Bibliotecas necessárias
-
-📄 README.md → Este documento
-
-📄 .gitignore            → Arquivos/pastas ignorados pelo Git
-
-📄 LICENSE               → Licença do projeto (MIT)
-
+- [Python](https://www.python.org/) 🐍
+- [TensorFlow 2.12.0](https://www.tensorflow.org/)
+- [Keras via TensorFlow](https://www.tensorflow.org/guide/keras)
+- [Streamlit](https://streamlit.io/)
+- [OpenCV](https://opencv.org/)
+- [NumPy](https://numpy.org/)
+- [Pillow (PIL)](https://python-pillow.org/)
+- [Matplotlib](https://matplotlib.org/)
 
 ---
 
-## 💻 Tecnologias Utilizadas
+## 🚀 Como usar a aplicação
 
-- Python 3.10+
-- TensorFlow / Keras
-- NumPy, OpenCV, Matplotlib
-- Scikit-learn
-- Streamlit (interface interativa)
-- Google Colab (para treinos e testes)
+### ✔️ Acesse a aplicação online:
+[🔗 Clique aqui para acessar no Streamlit Cloud](https://seu-link-aqui.streamlit.app)
 
----
+### 💻 Para executar localmente:
 
-## 📊 Resultados
+1. Clone o repositório:
 
-- **Acurácia média**: 94%
-- **IoU médio**: 0.88
-- Comparações visuais evidenciam a proximidade da segmentação automática com a segmentação manual feita por especialistas.
+git clone https://github.com/seu-usuario/tumor-segmentation-app.git
+cd tumor-segmentation-app
 
-✅ Veja abaixo um print da interface:  
-*(adicione aqui a imagem da interface)*
+2. Crie e ative um ambiente virtual (opcional):
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
 
----
+3. Instale as dependências:
+pip install -r requirements.txt
 
-## 🎥 Vídeo Demonstrativo
+4. Execute o app:
+streamlit run app.py
 
-📽️ Assista ao funcionamento do modelo aplicado a exames reais:  
-[👉 Clique aqui para assistir ao vídeo](https://link-para-o-video.com)  
-*(ou escaneie o QR Code no final do TCC)*
+📸 Funcionalidades da aplicação
+📤 Upload de imagem de RM cerebral
 
----
+🎨 Visualização lado a lado da imagem original e da máscara prevista
 
-## 🌐 Acesse a Interface Interativa
+🔍 Sobreposição da máscara com transparência sobre a imagem original
 
-Hospedamos uma versão funcional da aplicação para testes com imagens MRI:
+⏳ Barra de carregamento durante predição
 
-[🔗 Acesse a Interface Streamlit](https://link-da-interface.com)
+⬇️ Opção para baixar a máscara prevista em PNG
 
----
+📊 Exibição de métricas do modelo (acurácia, IoU, Dice)
 
-## 📎 Citação e Referência
+🌙 Tema escuro com visual profissional e intuitivo
 
-Caso utilize este projeto como base, por favor cite da seguinte forma:
+📊 Desempenho do modelo
+O modelo foi treinado com imagens segmentadas manualmente e obteve os seguintes resultados em validação:
 
-> OLIVEIRA, Julia. Segmentação de Tumores Cerebrais em Imagens de Ressonância Magnética com CNN. UNIP – Universidade Paulista, 2025. Trabalho de Conclusão de Curso.
+Acurácia: 92%
 
----
+Dice Coefficient: 0.85
 
-## 🛡️ Licença
+IoU: 0.78
 
-Este projeto está licenciado sob a Licença MIT – veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+🧠 Arquitetura utilizada
+A rede utilizada foi a U-Net, uma arquitetura amplamente utilizada em segmentação semântica médica. A entrada foi ajustada para (128, 128, 1) com saída binária e função de perda binary_crossentropy.
 
----
+📁 Estrutura do projeto
+tumor-segmentation-app/
+├── app.py
+├── modelo.keras
+├── requirements.txt
+├── .streamlit/
+│   └── config.toml
+└── README.md
 
-## 📱 QR Code para acesso rápido
+👩‍💻 Desenvolvido por
+Julia Oliveira
+Estudante de Ciência da Computação
+TCC 2025 – Segmentação de Imagens Médicas com Deep Learning
 
-Você pode escanear o QR Code abaixo para acessar este repositório com todos os códigos, resultados e vídeo:
-
-*(adicione aqui o QR Code gerado)*
-
----
-
-Por Julia Oliveira  
-🚀 *"A inteligência artificial não substitui o ser humano, mas potencializa sua capacidade de transformar o mundo." – Pedro Domingos*
-
+📚 Referências
+Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation.
+https://www.tensorflow.org
+https://streamlit.io
+https://arxiv.org/abs/1505.04597
