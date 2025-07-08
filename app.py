@@ -15,10 +15,12 @@ model = load_model()
 
 # === Função para pré-processar imagem ===
 def preprocess_image(uploaded_image, target_size=(128, 128)):
-    image = Image.open(uploaded_image).convert('RGB')
+    image = Image.open(uploaded_image).convert('L')  # <- 'L' força escala de cinza
     image = image.resize(target_size)
-    img_array = np.array(image) / 255.0  # Normalização
+    img_array = np.array(image, dtype=np.float32) / 255.0  # normalização
+    img_array = np.expand_dims(img_array, axis=-1)  # (128,128) -> (128,128,1)
     return img_array, image
+
 
 # === Função para prever a máscara ===
 def predict_mask(model, img_array):
